@@ -64,7 +64,7 @@ section.allElems {
 
 .allElems header {
     width: 100%;
-    background-image: url("assets/city.jpg");;
+    background-image: url("assets/city.jpg");
     background-size: cover;
     background-position: center;
     margin-bottom: 40px;
