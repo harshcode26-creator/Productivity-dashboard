@@ -4,8 +4,15 @@ function openFeatures() {
     var fullElemPageBackBtn = document.querySelectorAll('.fullElem .back')
 
     allElems.forEach(function (elem) {
+        const refreshMotivation = motivationalQuote()
+
         elem.addEventListener('click', function () {
             fullElemPage[elem.id].style.display = 'block'
+
+            // If Motivation card clicked
+            if (elem.id == 2) {
+                refreshMotivation()
+            }
         })
     })
 
@@ -123,21 +130,32 @@ dailyPlanner()
 
 
 function motivationalQuote() {
-    var motivationQuoteContent = document.querySelector('.motivation-2 h1')
-    var motivationAuthor = document.querySelector('.motivation-3 h2')
+    const quoteEl = document.querySelector('.motivation-2 h1')
+    const authorEl = document.querySelector('.motivation-3 h2')
 
     async function fetchQuote() {
-        let response = await fetch('https://api.quotable.io/random')
-        let data = await response.json()
+        quoteEl.innerHTML = 'Loading quote...'
+        authorEl.innerHTML = ''
 
-        motivationQuoteContent.innerHTML = data.content
-        motivationAuthor.innerHTML = data.author
+        try {
+            const response = await fetch('https://api.quotable.io/random')
+            if (!response.ok) throw new Error('API Error')
+
+            const data = await response.json()
+            quoteEl.innerHTML = `"${data.content}"`
+            authorEl.innerHTML = `- ${data.author}`
+        } catch (error) {
+            quoteEl.innerHTML = `"Stay focused. Consistency beats motivation."`
+            authorEl.innerHTML = '- Unknown'
+            console.error('Motivation API failed', error)
+        }
     }
 
     fetchQuote()
+
+    return fetchQuote
 }
 
-motivationalQuote()
 
 
 function pomodoroTimer() {
