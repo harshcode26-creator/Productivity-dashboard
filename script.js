@@ -1,341 +1,349 @@
-function openFeatures() {
-    var allElems = document.querySelectorAll('.elem')
-    var fullElemPage = document.querySelectorAll('.fullElem')
-    var fullElemPageBackBtn = document.querySelectorAll('.fullElem .back')
+const DOM = {
+    elems: document.querySelectorAll('.elem'),
+    fullPages: document.querySelectorAll('.fullElem'),
+    backButtons: document.querySelectorAll('.fullElem .back'),
 
-    allElems.forEach(function (elem) {
-        const refreshMotivation = motivationalQuote()
+    // Todo
+    taskList: document.querySelector('.allTask'),
+    taskForm: document.querySelector('.addTask form'),
+    taskInput: document.querySelector('#task-input'),
+    taskDetails: document.querySelector('.addTask textarea'),
+    taskCheck: document.querySelector('#check'),
 
-        elem.addEventListener('click', function () {
-            fullElemPage[elem.id].style.display = 'block'
+    // Pomodoro
+    timerText: document.querySelector('.pomo-timer h1'),
+    startBtn: document.querySelector('.start-timer'),
+    pauseBtn: document.querySelector('.pause-timer'),
+    resetBtn: document.querySelector('.reset-timer'),
+    sessionText: document.querySelector('.session')
+}
 
-            // If Motivation card clicked
-            if (elem.id == 2) {
-                refreshMotivation()
-            }
+
+function navigationModule(onMotivationOpen) {
+    DOM.elems.forEach(elem => {
+        elem.addEventListener('click', () => {
+            DOM.fullPages[elem.id].style.display = 'block'
+            if (elem.id == 2) onMotivationOpen()
         })
     })
 
-    fullElemPageBackBtn.forEach(function (back) {
-        back.addEventListener('click', function () {
-            fullElemPage[back.id].style.display = 'none'
+    DOM.backButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            DOM.fullPages[btn.id].style.display = 'none'
         })
     })
 }
 
-openFeatures()
 
 
 function todoList() {
 
-    var currentTask = []
+    const STORAGE_KEY = 'todoTasks'
+    let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []
 
-    if (localStorage.getItem('currentTask')) {
-        currentTask = JSON.parse(localStorage.getItem('currentTask'))
-    } else {
-        console.log('Task list is Empty');
+    const taskContainer = document.querySelector('.allTask')
+    const form = document.querySelector('.addTask form')
+    const titleInput = document.querySelector('#task-input')
+    const detailsInput = document.querySelector('.addTask textarea')
+    const importantCheck = document.querySelector('#check')
+
+    function saveTasks() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks))
     }
 
+    function renderTasks() {
+        taskContainer.innerHTML = ''
 
+        tasks.forEach(task => {
+            const taskDiv = document.createElement('div')
+            taskDiv.className = 'task'
 
-    function renderTask() {
+            taskDiv.innerHTML = `
+                <h5>
+                    ${task.title}
+                    <span class="${task.important}">imp</span>
+                </h5>
+                <button data-id="${task.id}">Mark as Completed</button>
+            `
 
-        var allTask = document.querySelector('.allTask')
-
-        var sum = ''
-
-        currentTask.forEach(function (elem, idx) {
-            sum = sum + `<div class="task">
-        <h5>${elem.task} <span class=${elem.imp}>imp</span></h5>
-        <button id=${idx}>Mark as Completed</button>
-        </div>`
+            taskContainer.appendChild(taskDiv)
         })
 
-        allTask.innerHTML = sum
-
-        localStorage.setItem('currentTask', JSON.stringify(currentTask))
-
-        document.querySelectorAll('.task button').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                currentTask.splice(btn.id, 1)
-                renderTask()
+        document.querySelectorAll('.task button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = Number(btn.dataset.id)
+                tasks = tasks.filter(task => task.id !== id)
+                saveTasks()
+                renderTasks()
             })
         })
     }
-    renderTask()
 
-    let form = document.querySelector('.addTask form')
-    let taskInput = document.querySelector('.addTask form #task-input')
-    let taskDetailsInput = document.querySelector('.addTask form textarea')
-    let taskCheckbox = document.querySelector('.addTask form #check')
-
-    form.addEventListener('submit', function (e) {
+    form.addEventListener('submit', e => {
         e.preventDefault()
-        currentTask.push(
-            {
-                task: taskInput.value,
-                details: taskDetailsInput.value,
-                imp: taskCheckbox.checked
-            }
-        )
-        renderTask()
 
-        taskCheckbox.checked = false
-        taskInput.value = ''
-        taskDetailsInput.value = ''
+        if (!titleInput.value.trim()) return
+
+        tasks.push({
+            id: Date.now(),
+            title: titleInput.value.trim(),
+            details: detailsInput.value.trim(),
+            important: importantCheck.checked
+        })
+
+        saveTasks()
+        renderTasks()
+
+        titleInput.value = ''
+        detailsInput.value = ''
+        importantCheck.checked = false
     })
 
-
-
+    renderTasks()
 }
-
-todoList()
 
 
 function dailyPlanner() {
-    var dayPlanner = document.querySelector('.day-planner')
 
-    var dayPlanData = JSON.parse(localStorage.getItem('dayPlanData')) || {}
+    const STORAGE_KEY = 'dayPlannerData'
+    const plannerContainer = document.querySelector('.day-planner')
 
-    var hours = Array.from({ length: 18 }, (_, idx) => `${6 + idx}:00 - ${7 + idx}:00`)
+    const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}
 
-
-    var wholeDaySum = ''
-    hours.forEach(function (elem, idx) {
-
-        var savedData = dayPlanData[idx] || ''
-
-        wholeDaySum = wholeDaySum + `<div class="day-planner-time">
-    <p>${elem}</p>
-    <input id=${idx} type="text" placeholder="..." value=${savedData}>
-</div>`
+    const hours = Array.from({ length: 18 }, (_, i) => {
+        return {
+            label: `${6 + i}:00 - ${7 + i}:00`,
+            id: i
+        }
     })
 
-    dayPlanner.innerHTML = wholeDaySum
+    plannerContainer.innerHTML = ''
 
+    hours.forEach(hour => {
+        const wrapper = document.createElement('div')
+        wrapper.className = 'day-planner-time'
 
-    var dayPlannerInput = document.querySelectorAll('.day-planner input')
+        wrapper.innerHTML = `
+            <p>${hour.label}</p>
+            <input 
+                type="text" 
+                data-id="${hour.id}" 
+                value="${savedData[hour.id] || ''}"
+                placeholder="..."
+            >
+        `
 
-    dayPlannerInput.forEach(function (elem) {
-        elem.addEventListener('input', function () {
-            console.log('hello');
-            dayPlanData[elem.id] = elem.value
+        plannerContainer.appendChild(wrapper)
+    })
 
-            localStorage.setItem('dayPlanData', JSON.stringify(dayPlanData))
-        })
+    plannerContainer.addEventListener('input', e => {
+        if (e.target.tagName !== 'INPUT') return
+
+        savedData[e.target.dataset.id] = e.target.value
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData))
     })
 }
 
-dailyPlanner()
-
-
-function motivationalQuote() {
+function motivationModule() {
     const quoteEl = document.querySelector('.motivation-2 h1')
     const authorEl = document.querySelector('.motivation-3 h2')
 
-    async function fetchQuote() {
-        quoteEl.innerHTML = 'Loading quote...'
+    return async function fetchQuote() {
+        quoteEl.innerHTML = 'Loading...'
         authorEl.innerHTML = ''
 
         try {
-            const response = await fetch('https://api.quotable.io/random')
-            if (!response.ok) throw new Error('API Error')
-
-            const data = await response.json()
+            const res = await fetch('https://api.quotable.io/random')
+            const data = await res.json()
             quoteEl.innerHTML = `"${data.content}"`
             authorEl.innerHTML = `- ${data.author}`
-        } catch (error) {
-            quoteEl.innerHTML = `"Stay focused. Consistency beats motivation."`
+        } catch {
+            quoteEl.innerHTML = `"Consistency beats motivation."`
             authorEl.innerHTML = '- Unknown'
-            console.error('Motivation API failed', error)
         }
     }
-
-    fetchQuote()
-
-    return fetchQuote
 }
 
 
 
-function pomodoroTimer() {
+function pomodoroModule() {
 
+    const timer = document.querySelector('.pomo-timer h1')
+    const startBtn = document.querySelector('.start-timer')
+    const pauseBtn = document.querySelector('.pause-timer')
+    const resetBtn = document.querySelector('.reset-timer')
+    const session = document.querySelector('.session')
 
-    let timer = document.querySelector('.pomo-timer h1')
-    var startBtn = document.querySelector('.pomo-timer .start-timer')
-    var pauseBtn = document.querySelector('.pomo-timer .pause-timer')
-    var resetBtn = document.querySelector('.pomo-timer .reset-timer')
-    var session = document.querySelector('.pomodoro-fullpage .session')
-    var isWorkSession = true
-
-    let totalSeconds = 25 * 60
-    let timerInterval = null
-
-    function updateTimer() {
-        let minutes = Math.floor(totalSeconds / 60)
-        let seconds = totalSeconds % 60
-
-        timer.innerHTML = `${String(minutes).padStart('2', '0')}:${String(seconds).padStart('2', '0')}`
+    let state = JSON.parse(localStorage.getItem('pomodoroState')) || {
+        isWork: true,
+        seconds: 25 * 60
     }
 
-    function startTimer() {
-        clearInterval(timerInterval)
+    let interval = null
 
-        if (isWorkSession) {
-
-            timerInterval = setInterval(function () {
-                if (totalSeconds > 0) {
-                    totalSeconds--
-                    updateTimer()
-                } else {
-                    isWorkSession = false
-                    clearInterval(timerInterval)
-                    timer.innerHTML = '05:00'
-                    session.innerHTML = 'Take a Break'
-                    session.style.backgroundColor = 'var(--blue)'
-                    totalSeconds = 5 * 60
-                }
-            }, 10)
-        } else {
-
-
-            timerInterval = setInterval(function () {
-                if (totalSeconds > 0) {
-                    totalSeconds--
-                    updateTimer()
-                } else {
-                    isWorkSession = true
-                    clearInterval(timerInterval)
-                    timer.innerHTML = '25:00'
-                    session.innerHTML = 'Work Session'
-                    session.style.backgroundColor = 'var(--green)'
-                    totalSeconds = 25 * 60
-                }
-            }, 10)
-        }
-
+    function updateUI() {
+        const m = Math.floor(state.seconds / 60)
+        const s = state.seconds % 60
+        timer.innerHTML = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+        session.innerHTML = state.isWork ? 'Work Session' : 'Take a Break'
+        session.style.backgroundColor = state.isWork ? 'var(--green)' : 'var(--blue)'
     }
 
-    function pauseTimer() {
-        clearInterval(timerInterval)
+    function saveState() {
+        localStorage.setItem('pomodoroState', JSON.stringify(state))
     }
-    function resetTimer() {
-        totalSeconds = 25 * 60
-        clearInterval(timerInterval)
-        updateTimer()
 
-    }
-    startBtn.addEventListener('click', startTimer)
-    pauseBtn.addEventListener('click', pauseTimer)
-    resetBtn.addEventListener('click', resetTimer)
+    startBtn.addEventListener('click', () => {
+        if (interval) return
 
+        interval = setInterval(() => {
+            if (state.seconds > 0) {
+                state.seconds--
+                updateUI()
+                saveState()
+            } else {
+                state.isWork = !state.isWork
+                state.seconds = state.isWork ? 25 * 60 : 5 * 60
+                updateUI()
+                saveState()
+            }
+        }, 1000)
+    })
 
+    pauseBtn.addEventListener('click', () => {
+        clearInterval(interval)
+        interval = null
+        saveState()
+    })
 
+    resetBtn.addEventListener('click', () => {
+        clearInterval(interval)
+        interval = null
+        state = { isWork: true, seconds: 25 * 60 }
+        saveState()
+        updateUI()
+    })
+
+    updateUI()
 }
-
-pomodoroTimer()
-
 
 
 function weatherFunctionality() {
 
+    const apiKey = "c164a0d3f5524987be7172440261501"   // keep your real key here
+    const city = 'Bhopal'
 
-    // I have removed API key for security purpose
-    var apiKey = null
-    var city = 'Bhopal'
-
-
-
-    var header1Time = document.querySelector('.header1 h1')
-    var header1Date = document.querySelector('.header1 h2')
-    var header2Temp = document.querySelector('.header2 h2')
-    var header2Condition = document.querySelector('.header2 h4')
-    var precipitation = document.querySelector('.header2 .precipitation')
-    var humidity = document.querySelector('.header2 .humidity')
-    var wind = document.querySelector('.header2 .wind')
-
-    var data = null
+    const header1Time = document.querySelector('.header1 h1')
+    const header1Date = document.querySelector('.header1 h2')
+    const header2Temp = document.querySelector('.header2 h2')
+    const header2Condition = document.querySelector('.header2 h4')
+    const precipitation = document.querySelector('.header2 .precipitation')
+    const humidity = document.querySelector('.header2 .humidity')
+    const wind = document.querySelector('.header2 .wind')
 
     async function weatherAPICall() {
-        var response = await fetch(`http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${city}`)
-        data = await response.json()
+        try {
+            header2Temp.innerHTML = '--°C'
+            header2Condition.innerHTML = 'Loading weather...'
 
-        header2Temp.innerHTML = `${data.current.temp_c}°C`
-        header2Condition.innerHTML = `${data.current.condition.text}`
-        wind.innerHTML = `Wind: ${data.current.wind_kph} km/h`
-        humidity.innerHTML = `Humidity: ${data.current.humidity}%`
-        precipitation.innerHTML = `Heat Index : ${data.current.heatindex_c}%`
+            const response = await fetch(
+                `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${city}`
+            )
+
+            if (!response.ok) throw new Error('Weather API failed')
+
+            const data = await response.json()
+
+            header2Temp.innerHTML = `${data.current.temp_c}°C`
+            header2Condition.innerHTML = data.current.condition.text
+            wind.innerHTML = `Wind: ${data.current.wind_kph} km/h`
+            humidity.innerHTML = `Humidity: ${data.current.humidity}%`
+            precipitation.innerHTML = `Heat Index: ${data.current.heatindex_c}°C`
+
+        } catch (error) {
+            header2Condition.innerHTML = 'Weather unavailable'
+            console.error('Weather Error:', error)
+        }
     }
 
     weatherAPICall()
 
-
     function timeDate() {
-        const totalDaysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+        const months = ['January','February','March','April','May','June','July','August','September','October','November','December']
 
-        const monthNames = [
-            "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"
-        ];
-        var date = new Date()
-        var dayOfWeek = totalDaysOfWeek[date.getDay()]
-        var hours = date.getHours()
-        var minutes = date.getMinutes()
-        var seconds = date.getSeconds()
-        var tarik = date.getDate()
-        var month = monthNames[date.getMonth()]
-        var year = date.getFullYear()
+        const now = new Date()
 
-        header1Date.innerHTML = `${tarik} ${month}, ${year}`
+        const day = days[now.getDay()]
+        const date = now.getDate()
+        const month = months[now.getMonth()]
+        const year = now.getFullYear()
 
-        if (hours > 12) {
-            header1Time.innerHTML = `${dayOfWeek}, ${String(hours - 12).padStart('2', '0')}:${String(minutes).padStart('2', '0')}:${String(seconds).padStart('2', '0')} PM`
+        let hours = now.getHours()
+        const minutes = String(now.getMinutes()).padStart(2, '0')
+        const seconds = String(now.getSeconds()).padStart(2, '0')
+        const ampm = hours >= 12 ? 'PM' : 'AM'
+        hours = hours % 12 || 12
 
-        } else {
-            header1Time.innerHTML = `${dayOfWeek}, ${String(hours).padStart('2', '0')}:${String(minutes).padStart('2', '0')}:${String(seconds).padStart('2', '0')} AM`
-        }
+        header1Date.innerHTML = `${date} ${month}, ${year}`
+        header1Time.innerHTML = `${day}, ${hours}:${minutes}:${seconds} ${ampm}`
     }
 
-    setInterval(() => {
-        timeDate()
-    }, 1000);
-
+    setInterval(timeDate, 1000)
 }
 
 weatherFunctionality()
 
 
 function changeTheme() {
+    const themeBtn = document.querySelector('.theme')
+    const root = document.documentElement
 
-    var theme = document.querySelector('.theme')
-    var rootElement = document.documentElement
-
-    var flag = 0
-    theme.addEventListener('click', function () {
-
-        if (flag == 0) {
-            rootElement.style.setProperty('--pri', '#F8F4E1')
-            rootElement.style.setProperty('--sec', '#222831')
-            rootElement.style.setProperty('--tri1', '#948979')
-            rootElement.style.setProperty('--tri2', '#393E46')
-            flag = 1
-        } else if (flag == 1) {
-            rootElement.style.setProperty('--pri', '#F1EFEC')
-            rootElement.style.setProperty('--sec', '#030303')
-            rootElement.style.setProperty('--tri1', '#D4C9BE')
-            rootElement.style.setProperty('--tri2', '#123458')
-            flag = 2
-        } else if (flag == 2) {
-            rootElement.style.setProperty('--pri', '#F8F4E1')
-            rootElement.style.setProperty('--sec', '#381c0a')
-            rootElement.style.setProperty('--tri1', '#FEBA17')
-            rootElement.style.setProperty('--tri2', '#74512D')
-            flag = 0
+    const themes = [
+        {
+            pri: '#F8F4E1',
+            sec: '#381c0a',
+            tri1: '#FEBA17',
+            tri2: '#74512D'
+        },
+        {
+            pri: '#F8F4E1',
+            sec: '#222831',
+            tri1: '#948979',
+            tri2: '#393E46'
+        },
+        {
+            pri: '#F1EFEC',
+            sec: '#030303',
+            tri1: '#D4C9BE',
+            tri2: '#123458'
         }
+    ]
 
+    let currentTheme = Number(localStorage.getItem('themeIndex')) || 0
+
+    function applyTheme(index) {
+        const t = themes[index]
+        root.style.setProperty('--pri', t.pri)
+        root.style.setProperty('--sec', t.sec)
+        root.style.setProperty('--tri1', t.tri1)
+        root.style.setProperty('--tri2', t.tri2)
+    }
+
+    applyTheme(currentTheme)
+
+    themeBtn.addEventListener('click', () => {
+        currentTheme = (currentTheme + 1) % themes.length
+        applyTheme(currentTheme)
+        localStorage.setItem('themeIndex', currentTheme)
     })
-
-
 }
 
+const refreshMotivation = motivationModule()
+
+navigationModule(refreshMotivation)
 changeTheme()
+pomodoroModule()
+todoList()
+dailyPlanner()
+weatherFunctionality()

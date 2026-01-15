@@ -27,6 +27,17 @@
     src: url(./AeonikTRIAL-Bold.otf);
 }
 
+@media (max-width: 768px) {
+    html, body {
+        overflow-y: auto;
+    }
+
+    #main {
+        padding-top: 80px;
+    }
+}
+
+
 * {
     margin: 0;
     padding: 0;
@@ -673,4 +684,152 @@ nav {
 
 .theme:active {
     scale: 0.96;
+}
+
+
+
+
+@media (max-width: 768px) {
+
+    .allElems header {
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    header .header1 h1 {
+        font-size: 38px;
+        margin-bottom: 10px;
+    }
+
+    header .header1 h2,
+    header .header1 h4 {
+        font-size: 20px;
+    }
+
+    header .header2 h2 {
+        font-size: 36px;
+    }
+
+    header .header2 h4 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .allFeatures {
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .elem {
+        width: 100%;
+        height: 220px;
+    }
+
+    .elem h2 {
+        font-size: 22px;
+    }
+}
+@media (max-width: 768px) {
+    .fullElem {
+        overflow-y: auto;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .todo-list-fullpage h2 {
+        font-size: 34px;
+    }
+
+    .todo-container {
+        flex-direction: column;
+        gap: 20px;
+        height: auto;
+    }
+
+    .todo-container .addTask,
+    .todo-container .allTask {
+        width: 100%;
+        height: auto;
+    }
+
+    .task h5 {
+        font-size: 20px;
+    }
+
+    .task button {
+        padding: 12px 18px;
+        font-size: 14px;
+    }
+}
+@media (max-width: 768px) {
+
+    .daily-planner-fullpage h2 {
+        font-size: 34px;
+    }
+
+    .day-planner-time {
+        width: 100%;
+    }
+
+    .day-planner .day-planner-time input {
+        font-size: 20px;
+    }
+}
+@media (max-width: 768px) {
+
+    .pomodoro-fullpage h2 {
+        font-size: 28px;
+        text-align: center;
+    }
+
+    .pomo-timer {
+        position: static;
+        transform: none;
+        margin-top: 60px;
+    }
+
+    .pomo-timer h1 {
+        font-size: 90px;
+    }
+
+    .pomo-timer button {
+        width: 90%;
+        margin: 10px auto;
+        display: block;
+        font-size: 20px;
+    }
+
+    .pomodoro-fullpage .session {
+        position: static;
+        margin: 20px auto;
+        text-align: center;
+        width: fit-content;
+    }
+}
+@media (max-width: 768px) {
+
+    nav {
+        padding: 15px;
+    }
+
+    .nav-in {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .nav-in h2 {
+        font-size: 22px;
+    }
+
+    .theme {
+        width: 100%;
+        text-align: center;
+    }
 }
