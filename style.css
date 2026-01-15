@@ -410,7 +410,7 @@ header .header2 h3 {
     -webkit-box-pack: justify;
     -ms-flex-pack: justify;
     justify-content: space-between;
-    webkitscrollbar-width: none; /* Firefox */
+    -webkit-scrollbar-width: none;
     scrollbar-width: none; /* Firefox */
 }
 
